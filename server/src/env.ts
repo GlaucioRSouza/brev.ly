@@ -9,14 +9,18 @@ const envSchema = z.object({
     .default("development"),
 
   // Banco de Dados (PostgreSQL)
-  DATABASE_URL: z.string().url(),
+  // Adicionamos um valor default para não quebrar a inicialização sem o .env
+  DATABASE_URL: z
+    .string()
+    .url()
+    .default("postgresql://docker:docker@localhost:5432/brevly"),
 
-  // Cloudflare R2 (S3 Compatible Storage)
-  CLOUDFLARE_ACCOUNT_ID: z.string(),
-  CLOUDFLARE_ACCESS_KEY_ID: z.string(),
-  CLOUDFLARE_SECRET_ACCESS_KEY: z.string(),
-  CLOUDFLARE_BUCKET: z.string(),
-  CLOUDFLARE_PUBLIC_URL: z.string().url(),
+  // Cloudflare R2 (Valores fictícios para passar na validação)
+  CLOUDFLARE_ACCOUNT_ID: z.string().default("fictitious-account-id"),
+  CLOUDFLARE_ACCESS_KEY_ID: z.string().default("fictitious-access-key"),
+  CLOUDFLARE_SECRET_ACCESS_KEY: z.string().default("fictitious-secret-key"),
+  CLOUDFLARE_BUCKET: z.string().default("fictitious-bucket-name"),
+  CLOUDFLARE_PUBLIC_URL: z.string().url().default("https://fictitious-url.com"),
 });
 
 const _env = envSchema.safeParse(process.env);
