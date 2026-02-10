@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/http/server.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx src/db/migrate.ts",
+    "db:migrate": "drizzle-kit push",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix"
   },
