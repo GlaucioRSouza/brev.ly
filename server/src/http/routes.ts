@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { db } from '../../bd/index'; // Sua instância do Drizzle
-import { links } from '../../bd/schema';
+import { db } from '../bd/index'; // Sua instância do Drizzle
+import { links } from '../bd/schema';
 import { eq, desc, sql } from 'drizzle-orm';
 import { exportLinksToCsv } from '../services/export-links';
 
