@@ -1,4 +1,4 @@
-ervices:
+services:
   # Banco de Dados Postgres
   db:
     image: postgres:15-alpine
