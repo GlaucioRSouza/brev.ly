@@ -38,20 +38,40 @@ export function LinkList() {
       </div>
 
       <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-        {links?.map((link) => (
-          <div key={link.id} className="flex items-center justify-between p-4 border-b last:border-0 hover:bg-gray-50 transition-colors">
-            <div>
-              <p className="text-indigo-600 font-bold">brev.ly/{link.slug}</p>
-              <p className="text-gray-400 text-sm truncate max-w-xs">{link.originalUrl}</p>
+        {/* Adicionamos Array.isArray() para garantir que o .map só execute se 'links' for uma lista real */}
+        {Array.isArray(links) ? (
+          links.map((link) => (
+            <div key={link.id} className="flex items-center justify-between p-4 border-b last:border-0 hover:bg-gray-50 transition-colors">
+              <div>
+                <p className="text-indigo-600 font-bold">brev.ly/{link.slug}</p>
+                <p className="text-gray-400 text-sm truncate max-w-xs">{link.originalUrl}</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-gray-400 text-sm">{link.clicks} acessos</span>
+                <button 
+                  onClick={() => navigator.clipboard.writeText(`brev.ly/${link.slug}`)} 
+                  className="p-2 hover:bg-gray-200 rounded-md transition-colors"
+                >
+                  <Copy size={18} />
+                </button>
+                <button 
+                  onClick={() => confirm(`Apagar ${link.slug}?`) && deleteLink(link.slug)} 
+                  className="p-2 hover:bg-red-50 text-red-500 rounded-md transition-colors"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-gray-400 text-sm">{link.clicks} acessos</span>
-              <button onClick={() => navigator.clipboard.writeText(`brev.ly/${link.slug}`)} className="p-2 hover:bg-gray-200 rounded-md transition-colors"><Copy size={18} /></button>
-              <button onClick={() => confirm(`Apagar ${link.slug}?`) && deleteLink(link.slug)} className="p-2 hover:bg-red-50 text-red-500 rounded-md transition-colors"><Trash2 size={18} /></button>
-            </div>
-          </div>
-        ))}
-        {links?.length === 0 && <p className="text-center text-gray-400 py-10">Nenhum link encontrado.</p>}
+          ))
+        ) : (
+          /* Exibe um estado de carregamento amigável enquanto links for undefined ou não for array */
+          <p className="text-center text-gray-400 py-10">Carregando links...</p>
+        )}
+
+        {/* Verificação segura para quando a lista está vazia */}
+        {Array.isArray(links) && links.length === 0 && (
+          <p className="text-center text-gray-400 py-10">Nenhum link encontrado.</p>
+        )}
       </div>
     </div>
   );
