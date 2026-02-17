@@ -5,7 +5,6 @@ import { env } from '../env';
 
 const app = fastify();
 
-// Ajuste no CORS para permitir métodos específicos, especialmente o DELETE
 app.register(cors, { 
   origin: '*', 
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], // OPTIONS é essencial para o preflight

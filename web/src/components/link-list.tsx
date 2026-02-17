@@ -35,7 +35,7 @@ export function LinkList() {
   });
 
   const handleCopy = async (slug: string) => {
-    // IMPORTANTE: O link copiado deve apontar para onde sua API processa o redirecionamento
+    // O link copiado deve apontar para onde sua API processa o redirecionamento
     const url = `http://localhost:3333/${slug}`; 
     
     try {

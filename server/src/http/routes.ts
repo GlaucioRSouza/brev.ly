@@ -38,23 +38,7 @@ export async function appRoutes(app: FastifyInstance) {
 
   // --- 2. ROTAS COM PARÂMETROS ESPECÍFICOS ---
 
-  // AJUSTE NO DELETE: Verificação de existência antes de deletar
-  /*app.delete('/links/:slug', async (request, reply) => {
-    const getParamsSchema = z.object({ slug: z.string() });
-    const { slug } = getParamsSchema.parse(request.params);
-
-    // Primeiro verificamos se o link existe para evitar erros silenciosos
-    const [linkExists] = await db.select().from(links).where(eq(links.slug, slug));
-
-    if (!linkExists) {
-      return reply.status(404).send({ message: "Link not found" });
-    }
-
-    await db.delete(links).where(eq(links.slug, slug));
-    
-    return reply.status(204).send();
-  });*/
-  
+  // Verificação de existência antes de deletar
   app.delete('/links/:slug', async (request, reply) => {
     const { slug } = z.object({ slug: z.string() }).parse(request.params);
 
@@ -69,6 +53,7 @@ export async function appRoutes(app: FastifyInstance) {
       return reply.status(500).send({ message: "Erro interno no servidor" });
     }
   });
+
   // --- 3. ROTA DE REDIRECIONAMENTO (Sempre por último) ---
 
   app.get('/:slug', async (request, reply) => {
@@ -87,7 +72,7 @@ export async function appRoutes(app: FastifyInstance) {
       return reply.status(404).send({ message: "Link not found" });
     }
 
-    // AJUSTE NO REDIRECT: Garantir que a URL original seja válida para o navegador
+    // Garantir que a URL original seja válida para o navegador
     let destination = link.originalUrl;
     if (!destination.startsWith('http')) {
       destination = `https://${destination}`;
