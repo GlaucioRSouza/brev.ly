@@ -1,19 +1,19 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { db } from '../db/index'; // Sua instância do Drizzle
+import { db } from '../db/index';
 import { links } from '../db/schema';
 import { eq, desc, sql } from 'drizzle-orm';
 import { exportLinksToCsv } from '../services/export-links';
 
 export async function appRoutes(app: FastifyInstance) {
   
-  // Listar todos os links
+  // --- 1. ROTAS FIXAS ---
+  
   app.get('/links', async () => {
     const allLinks = await db.select().from(links).orderBy(desc(links.createdAt));
     return allLinks;
   });
 
-  // Criar novo link
   app.post('/links', async (request, reply) => {
     const createLinkSchema = z.object({
       originalUrl: z.string().url(),
@@ -30,42 +30,73 @@ export async function appRoutes(app: FastifyInstance) {
     }
   });
 
-  // Obter URL original por Slug
-  app.get('/links/:slug', async (request, reply) => {
-    const getParamsSchema = z.object({ slug: z.string() });
-    const { slug } = getParamsSchema.parse(request.params);
-
-    const [link] = await db.select().from(links).where(eq(links.slug, slug));
-
-    if (!link) return reply.status(404).send({ message: "Link not found" });
-    return link;
-  });
-
-  // Incrementar acessos
-  app.patch('/links/:slug/access', async (request, reply) => {
-    const getParamsSchema = z.object({ slug: z.string() });
-    const { slug } = getParamsSchema.parse(request.params);
-
-    await db.update(links)
-      .set({ clicks: sql`${links.clicks} + 1` })
-      .where(eq(links.slug, slug));
-
-    return reply.status(204).send();
-  });
-
-  // Deletar link
-  app.delete('/links/:slug', async (request, reply) => {
-    const getParamsSchema = z.object({ slug: z.string() });
-    const { slug } = getParamsSchema.parse(request.params);
-
-    await db.delete(links).where(eq(links.slug, slug));
-    return reply.status(204).send();
-  });
-
-  // Exportar para CSV
   app.post('/links/export', async () => {
     const allLinks = await db.select().from(links);
     const url = await exportLinksToCsv(allLinks);
     return { url };
+  });
+
+  // --- 2. ROTAS COM PARÂMETROS ESPECÍFICOS ---
+
+  // AJUSTE NO DELETE: Verificação de existência antes de deletar
+  /*app.delete('/links/:slug', async (request, reply) => {
+    const getParamsSchema = z.object({ slug: z.string() });
+    const { slug } = getParamsSchema.parse(request.params);
+
+    // Primeiro verificamos se o link existe para evitar erros silenciosos
+    const [linkExists] = await db.select().from(links).where(eq(links.slug, slug));
+
+    if (!linkExists) {
+      return reply.status(404).send({ message: "Link not found" });
+    }
+
+    await db.delete(links).where(eq(links.slug, slug));
+    
+    return reply.status(204).send();
+  });*/
+  
+  app.delete('/links/:slug', async (request, reply) => {
+    const { slug } = z.object({ slug: z.string() }).parse(request.params);
+
+    try {
+      // Adicione o await para garantir que o banco termine antes de responder
+      await db.delete(links).where(eq(links.slug, slug));
+      
+      // O .send() no final é OBRIGATÓRIO para liberar o navegador
+      return reply.status(204).send(); 
+    } catch (error) {
+      console.error(error);
+      return reply.status(500).send({ message: "Erro interno no servidor" });
+    }
+  });
+  // --- 3. ROTA DE REDIRECIONAMENTO (Sempre por último) ---
+
+  app.get('/:slug', async (request, reply) => {
+    const getParamsSchema = z.object({ slug: z.string() });
+    const { slug } = getParamsSchema.parse(request.params);
+
+    // Proteção reforçada contra rotas internas
+    const reservedWords = ['links', 'favicon.ico', 'public', 'assets'];
+    if (reservedWords.includes(slug)) {
+        return reply.status(404).send();
+    }
+
+    const [link] = await db.select().from(links).where(eq(links.slug, slug));
+
+    if (!link) {
+      return reply.status(404).send({ message: "Link not found" });
+    }
+
+    // AJUSTE NO REDIRECT: Garantir que a URL original seja válida para o navegador
+    let destination = link.originalUrl;
+    if (!destination.startsWith('http')) {
+      destination = `https://${destination}`;
+    }
+
+    await db.update(links)
+      .set({ clicks: sql`${links.clicks} + 1` })
+      .where(eq(links.id, link.id));
+
+    return reply.redirect(destination);
   });
 }

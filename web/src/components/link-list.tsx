@@ -1,7 +1,7 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { api } from '../lib/axios';
 import { queryClient } from '../lib/query-client';
-import { Copy, Trash2, Download, Check } from 'lucide-react'; // Adicionei Check para feedback
+import { Copy, Trash2, Download, Check } from 'lucide-react';
 import { useState } from 'react';
 
 interface Link {
@@ -22,26 +22,29 @@ export function LinkList() {
     },
   });
 
-  // Ajuste na mutação para garantir o tratamento de erro
   const { mutateAsync: deleteLinkFn } = useMutation({
+    // Garantimos que a URL inclua o prefixo /links/ para não cair no redirecionador
     mutationFn: (slug: string) => api.delete(`/links/${slug}`),
     onSuccess: () => {
-      // Isso força a lista a atualizar automaticamente após deletar
       queryClient.invalidateQueries({ queryKey: ['links'] });
     },
     onError: (error) => {
       console.error("Erro ao deletar link:", error);
-      alert("Não foi possível excluir o link.");
+      alert("Não foi possível excluir o link. Verifique se o servidor está rodando.");
     }
   });
 
   const handleCopy = async (slug: string) => {
-    const url = `http://localhost:3333/${slug}`; // URL final do redirecionamento
-    await navigator.clipboard.writeText(url);
-    setCopiedSlug(slug);
+    // IMPORTANTE: O link copiado deve apontar para onde sua API processa o redirecionamento
+    const url = `http://localhost:3333/${slug}`; 
     
-    // Remove o ícone de check após 2 segundos
-    setTimeout(() => setCopiedSlug(null), 2000);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedSlug(slug);
+      setTimeout(() => setCopiedSlug(null), 2000);
+    } catch (err) {
+      alert("Erro ao copiar para a área de transferência.");
+    }
   };
 
   const handleDelete = async (slug: string) => {
@@ -49,7 +52,7 @@ export function LinkList() {
       try {
         await deleteLinkFn(slug);
       } catch (err) {
-        // Erro já tratado no onError da mutação
+        // Erro tratado no onError
       }
     }
   };
@@ -72,7 +75,7 @@ export function LinkList() {
   );
 
   return (
-    <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 flex-1">
+    <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 flex-1 min-w-[400px]">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Meus links</h2>
         <button 
@@ -83,13 +86,15 @@ export function LinkList() {
         </button>
       </div>
 
-      <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+      <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
         {Array.isArray(links) && links.length > 0 ? (
           links.map((link) => (
             <div key={link.id} className="flex items-center justify-between p-4 border border-transparent border-b-gray-100 last:border-b-0 hover:border-indigo-100 hover:bg-indigo-50/30 rounded-xl transition-all group">
               <div className="min-w-0 flex-1">
                 <p className="text-indigo-600 font-bold truncate">brev.ly/{link.slug}</p>
-                <p className="text-gray-400 text-sm truncate max-w-[200px] md:max-w-xs">{link.originalUrl}</p>
+                <p className="text-gray-400 text-sm truncate max-w-[200px] md:max-w-xs">
+                  {link.originalUrl}
+                </p>
               </div>
               
               <div className="flex items-center gap-2 ml-4">
@@ -99,7 +104,7 @@ export function LinkList() {
                 
                 <button 
                   onClick={() => handleCopy(link.slug)} 
-                  title="Copiar link"
+                  title="Copiar link encurtado"
                   className="p-2 hover:bg-white hover:shadow-sm text-gray-400 hover:text-indigo-600 rounded-lg transition-all"
                 >
                   {copiedSlug === link.slug ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
