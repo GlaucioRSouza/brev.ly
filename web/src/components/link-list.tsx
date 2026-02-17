@@ -15,7 +15,6 @@ interface Link {
 export function LinkList() {
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
 
-  // 1. Busca de dados com estado de sincronização (isFetching)
   const { data: links, isLoading, isFetching } = useQuery<Link[]>({
     queryKey: ['links'],
     queryFn: async () => {
@@ -24,7 +23,6 @@ export function LinkList() {
     },
   });
 
-  // 2. Função de deletar link
   const { mutateAsync: deleteLinkFn } = useMutation({
     mutationFn: (slug: string) => api.delete(`/links/${slug}`),
     onSuccess: () => {
@@ -36,7 +34,6 @@ export function LinkList() {
     }
   });
 
-  // 3. Handlers de interação
   const handleCopy = async (slug: string) => {
     const url = `http://localhost:3333/${slug}`; 
     try {
@@ -68,7 +65,6 @@ export function LinkList() {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex-1 min-w-[400px] relative overflow-hidden flex flex-col">
       
-     {/* BARRA DE PROGRESSO NO TOPO ABSOLUTO */}
       <div className="absolute top-0 left-0 w-full h-0.5 bg-gray-50/30 z-10">
         {(isLoading || isFetching) && (
           <div 
@@ -78,7 +74,6 @@ export function LinkList() {
         )}
       </div>    
 
-      {/* ÁREA DE CONTEÚDO COM PADDING INTERNO */}
       <div className="p-8 pt-10">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Meus links</h2>
@@ -102,7 +97,21 @@ export function LinkList() {
               links.map((link) => (
                 <div key={link.id} className="flex items-center justify-between p-4 border border-transparent border-b-gray-100 last:border-b-0 hover:border-indigo-100 hover:bg-indigo-50/30 rounded-xl transition-all group">
                   <div className="min-w-0 flex-1">
-                    <p className="text-indigo-600 font-bold truncate">brev.ly/{link.slug}</p>
+                    {/* AJUSTE AQUI: O link agora aponta para o servidor e atualiza a lista após o clique */}
+                    <a 
+                      href={`http://localhost:3333/${link.slug}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      onClick={() => {
+                        // Aguarda meio segundo para o servidor processar e atualiza a lista
+                        setTimeout(() => {
+                          queryClient.invalidateQueries({ queryKey: ['links'] });
+                        }, 500);
+                      }}
+                      className="text-indigo-600 font-bold truncate hover:underline block w-fit"
+                    >
+                      brev.ly/{link.slug}
+                    </a>
                     <p className="text-gray-400 text-sm truncate max-w-[200px] md:max-w-xs">{link.originalUrl}</p>
                   </div>
                   
