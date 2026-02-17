@@ -5,7 +5,7 @@ import { env } from '../env';
 
 const app = fastify();
 
-app.register(cors, { origin: '*' }); // Em produção, restrinja ao seu domínio
+app.register(cors, { origin: '*' }); 
 app.register(appRoutes);
 
 app.listen({ port: env.PORT, host: '0.0.0.0' }).then(() => {
