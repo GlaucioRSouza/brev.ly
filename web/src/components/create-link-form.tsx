@@ -4,7 +4,8 @@ import { z } from 'zod';
 import { useMutation } from '@tanstack/react-query';
 import { api } from '../lib/axios';
 import { queryClient } from '../lib/query-client';
-import { Loader2 } from 'lucide-react'; // Importação do ícone de carregamento
+import { Loader2 } from 'lucide-react';
+import { toast, Toaster } from 'sonner'; // 1. Importação do Toast
 
 const createLinkSchema = z.object({
   originalUrl: z.string().url('URL inválida'),
@@ -18,17 +19,34 @@ export function CreateLinkForm() {
     resolver: zodResolver(createLinkSchema),
   });
 
-  // Extraímos o isPending para controlar o estado do botão
   const { mutateAsync: createLink, isPending } = useMutation({
     mutationFn: (data: CreateLinkData) => api.post('/links', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['links'] });
+      toast.success('Link criado com sucesso!'); // Feedback positivo
       reset();
     },
+    onError: (error: any) => {
+      // 2. TRATAMENTO DE DUPLICIDADE
+      // Verifica se o erro é 409 (Conflict) ou se a mensagem indica duplicidade
+      if (error.response?.status === 409 || error.response?.data?.message?.includes('exists')) {
+        toast.error('Erro no cadastro', {
+          description: 'Essa URL encurtada já existe.',
+          className: 'bg-red-50 border-red-200 text-red-800' // Estilização idêntica à imagem
+        });
+      } else {
+        toast.error('Erro ao salvar', {
+          description: 'Ocorreu um erro inesperado no servidor.'
+        });
+      }
+    }
   });
 
   return (
     <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 w-full max-w-md">
+      {/* 3. Componente que renderiza os alertas no topo da aplicação */}
+      <Toaster position="bottom-right" richColors /> 
+      
       <h2 className="text-2xl font-bold mb-6">Novo link</h2>
       <form onSubmit={handleSubmit((data) => createLink(data))} className="space-y-5">
         <div>
@@ -50,7 +68,6 @@ export function CreateLinkForm() {
           {errors.slug && <p className="text-red-500 text-xs mt-1">{errors.slug.message}</p>}
         </div>
 
-        {/* BOTÃO ANIMADO */}
         <button 
           type="submit" 
           disabled={isPending}
@@ -58,7 +75,7 @@ export function CreateLinkForm() {
         >
           {isPending ? (
             <>
-              <Loader2 className="h-5 w-5 animate-spin" /> {/* Ícone girando */}
+              <Loader2 className="h-5 w-5 animate-spin" />
               Salvando...
             </>
           ) : (
