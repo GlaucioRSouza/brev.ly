@@ -8,7 +8,7 @@ export default [
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: "./tsconfig.json", // Necessário para regras que analisam tipos como no-floating-promises
+        project: "./tsconfig.json", 
       },
     },
     plugins: {
@@ -16,7 +16,7 @@ export default [
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
-      // A regra de ouro para Fastify/Node:
+      
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/no-unused-vars": [
         "error",

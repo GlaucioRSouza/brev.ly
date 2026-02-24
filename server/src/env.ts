@@ -9,7 +9,6 @@ const envSchema = z.object({
     .default("development"),
 
   // Banco de Dados (PostgreSQL)
-  // Adicionamos um valor default para não quebrar a inicialização sem o .env
   DATABASE_URL: z
     .string()
     .url()

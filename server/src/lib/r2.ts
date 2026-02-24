@@ -1,5 +1,5 @@
 import { S3Client } from '@aws-sdk/client-s3';
-import { env } from '../env'; // Importando do seu arquivo de env já existente
+import { env } from '../env'; 
 
 export const r2 = new S3Client({
   region: 'auto',

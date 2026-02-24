@@ -7,7 +7,7 @@ const app = fastify();
 
 app.register(cors, { 
   origin: '*', 
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], // OPTIONS é essencial para o preflight
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], 
 }); 
 
 app.register(appRoutes);
