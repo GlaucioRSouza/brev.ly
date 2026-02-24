@@ -5,7 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import { api } from '../lib/axios';
 import { queryClient } from '../lib/query-client';
 import { Loader2 } from 'lucide-react';
-import { toast, Toaster } from 'sonner'; // 1. Importação do Toast
+import { toast, Toaster } from 'sonner'; 
 
 const createLinkSchema = z.object({
   originalUrl: z.string().url('URL inválida'),
@@ -23,7 +23,7 @@ export function CreateLinkForm() {
     mutationFn: (data: CreateLinkData) => api.post('/links', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['links'] });
-      toast.success('Link criado com sucesso!'); // Feedback positivo
+      toast.success('Link criado com sucesso!'); 
       reset();
     },
     onError: (error: any) => {
@@ -32,7 +32,7 @@ export function CreateLinkForm() {
       if (error.response?.status === 409 || error.response?.data?.message?.includes('exists')) {
         toast.error('Erro no cadastro', {
           description: 'Essa URL encurtada já existe.',
-          className: 'bg-red-50 border-red-200 text-red-800' // Estilização idêntica à imagem
+          className: 'bg-red-50 border-red-200 text-red-800' 
         });
       } else {
         toast.error('Erro ao salvar', {

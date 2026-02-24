@@ -6,14 +6,14 @@ export default {
   ],
   theme: {
     extend: {
-      // DEFINA OS MOVIMENTOS AQUI
+      
       keyframes: {
         loading: {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(400%)' },
         },
       },
-      // DEFINA A VELOCIDADE AQUI
+      
       animation: {
         loading: 'loading 2s infinite linear',
       },

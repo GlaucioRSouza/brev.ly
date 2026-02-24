@@ -97,7 +97,7 @@ export function LinkList() {
               links.map((link) => (
                 <div key={link.id} className="flex items-center justify-between p-4 border border-transparent border-b-gray-100 last:border-b-0 hover:border-indigo-100 hover:bg-indigo-50/30 rounded-xl transition-all group">
                   <div className="min-w-0 flex-1">
-                    {/* AJUSTE AQUI: O link agora aponta para o servidor e atualiza a lista após o clique */}
+                    {/* O link agora aponta para o servidor e atualiza a lista após o clique */}
                     <a 
                       href={`http://localhost:3333/${link.slug}`} 
                       target="_blank" 
